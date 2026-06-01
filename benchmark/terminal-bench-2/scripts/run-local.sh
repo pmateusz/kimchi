@@ -5,7 +5,7 @@
 #
 # Usage examples:
 #   ./scripts/run-local.sh -i terminal-bench/fix-git
-#   MODEL=kimchi-dev/kimi-k2.5 ./scripts/run-local.sh -i terminal-bench/fix-git -k 3
+#   MODEL=kimchi-dev/kimi-k2.6 ./scripts/run-local.sh -i terminal-bench/fix-git -k 3
 #   ./scripts/run-local.sh -i terminal-bench/fix-git -k 3 --agent-kwarg multi-model=true
 set -euo pipefail
 
@@ -16,9 +16,11 @@ DATASET="terminal-bench/terminal-bench-2"
 BENCH_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 REPO_ROOT="$(git -C "$BENCH_DIR" rev-parse --show-toplevel)"
 
-echo "==> Cross-building kimchi (target=linux-x64)"
-(cd "$REPO_ROOT" && pnpm run build:binary-linux-x64)
-# `build:binary-linux-x64` produces dist/bin/kimchi alongside dist/share/kimchi/{package.json,theme,export-html}.
+KIMCHI_BINARY_TARGET="${KIMCHI_BINARY_TARGET:-linux-x64}"
+
+echo "==> Cross-building kimchi (target=${KIMCHI_BINARY_TARGET})"
+(cd "$REPO_ROOT" && node scripts/build-binary.js --target "$KIMCHI_BINARY_TARGET")
+# The binary build produces dist/bin/kimchi alongside dist/share/kimchi/{package.json,theme,export-html}.
 # The agent walks up from the binary to find the share/ tree, so point KIMCHI_CODE_BINARY at bin/kimchi.
 export KIMCHI_CODE_BINARY="$REPO_ROOT/dist/bin/kimchi"
 
@@ -26,7 +28,7 @@ cd "$BENCH_DIR"
 exec uv run --python 3.14 harbor run \
     --agent-import-path kimchi_agent:Kimchi \
     --env docker \
-    --model "${MODEL:-kimchi-dev/kimi-k2.5}" \
+    --model "${MODEL:-kimchi-dev/kimi-k2.6}" \
     --ae "KIMCHI_API_KEY=$KIMCHI_API_KEY" \
     -d "$DATASET" \
     "$@"

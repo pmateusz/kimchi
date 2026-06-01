@@ -12,6 +12,7 @@ import { platform } from "node:os"
 const TARGET_MAP = {
 	"linux-arm64": "bun-linux-arm64",
 	"linux-x64": "bun-linux-x64",
+	"linux-x64-baseline": "bun-linux-x64-baseline",
 }
 
 const targetArg =
